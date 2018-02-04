@@ -1,11 +1,13 @@
+
 var aws = require('aws-sdk');
 const sql = require("mysql");
 const bucket="jabil-aws-assets";
 const Key = "iotdata-mapper.json";
-var userName = 'Jabil';
-var passWord = 'jabilaws';
+var userName = 'encrypted-username';
+var passWord = 'encrypted-password';
 
 
+// Reads the mapping data for json path and respective MySQL take column to be populated
 function readconfigdata(params, cb){
     console.log("reading s3 object");
      const s3 = new aws.S3({ region: 'us-east-1' });    
@@ -42,14 +44,16 @@ function getObjectdata(o,s){
     return o;
 }
 
+
+// Insrerts each row into the SQL table
 function executeSQLInsert(mapperdata,iotData,cb){
     
     const connection = sql.createConnection({
-      host     : '10.200.224.36',
-      port     : '3306',
+      host     : 'server-address',
+      port     : 'port-address',
       user     : userName,
       password : passWord,
-      database : 'jabildb'
+      database : 'databse-name'
     });
     
             
@@ -65,7 +69,7 @@ function executeSQLInsert(mapperdata,iotData,cb){
            insQueryMySQLColumnstr = insQueryMySQLColumnstr.substring(0,insQueryMySQLColumnstr.length-1);
            insQueryIoTJsonData = insQueryIoTJsonData.substring(0,insQueryIoTJsonData.length-1);
            
-          var insQueryPrefix =  "Insert Into FACT_Device_Telemetry (";
+          var insQueryPrefix =  "Insert Into Table-Name (";
           var insQueryMid = ") Values (";
           var insQueryEnd = ")";
            
@@ -82,7 +86,7 @@ function executeSQLInsert(mapperdata,iotData,cb){
          cb(null,"Success");
 }
 
-
+//Process iot-data in s3 object using the mapping data
 function processData(o,mapperdata,cb){
 
     let message = o.Records[0].Sns.Message;
